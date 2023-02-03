@@ -26,7 +26,7 @@ public class Tarea3Ejercicio2Cliente {
                 while (conectado) {
                     respuesta = in.readLine();
                     if (respuesta.endsWith("***")) {
-                        System.out.println(respuesta.substring(0, respuesta.length() - 3) + "\n");
+                        System.out.println("\n" + respuesta.substring(0, respuesta.length() - 3));
                     } else if (respuesta.endsWith("**?")) {
                         System.out.println(respuesta.substring(0, respuesta.length() - 3));
                     } else if (respuesta.endsWith("**-")) {

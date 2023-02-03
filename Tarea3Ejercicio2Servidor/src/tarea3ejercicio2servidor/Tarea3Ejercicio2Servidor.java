@@ -27,6 +27,7 @@ public class Tarea3Ejercicio2Servidor {
             while (!flagServidorApagado) {
                 // Aceptar una conexión entrante
                 Socket cliente = servidor.accept();
+                cliente.setSoLinger(true, 10);
                 contadorClientes++;
                 System.out.println("Cliente " + contadorClientes + " conectado desde " + cliente.getInetAddress().getHostAddress());
 

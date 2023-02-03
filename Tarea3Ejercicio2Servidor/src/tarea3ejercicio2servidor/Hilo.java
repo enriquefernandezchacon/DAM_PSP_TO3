@@ -1,6 +1,7 @@
 package tarea3ejercicio2servidor;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -20,6 +21,7 @@ public class Hilo extends Thread {
     private static final int INTENTOS_MAXIMOS = 3;
     private static final String USER = "enrique";
     private static final String PASS = "1234";
+    private static final String DIRECTORIO = "datos/";
     private int intentos = 0;
     private String respuesta;
     private BufferedReader in = null;
@@ -39,7 +41,7 @@ public class Hilo extends Thread {
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
         msjSinRetorno("BIENVENIDO CLIENTE " + numeroCliente);
-        log("Socket para el cliente " + numeroCliente + "creado");
+        log("Socket para el cliente " + numeroCliente + " creado");
     }
 
     @Override
@@ -61,9 +63,9 @@ public class Hilo extends Thread {
             contrasena = respuesta();
             if (contrasena.equals(PASS) && usuario.equals(USER)) {
                 flagApagado = false;
-                msjSinRetornoDobleLinea("Acceso concedido");
+                msjSinRetorno("Acceso concedido");
             } else {
-                msjSinRetornoDobleLinea("Acceso denegado, vuelva a intentarlo");
+                msjSinRetorno("Acceso denegado, vuelva a intentarlo\n");
             }
             intentos++;
         }
@@ -84,6 +86,7 @@ public class Hilo extends Thread {
             respuesta = mostrarMenu();
             switch (respuesta) {
                 case "ls" -> {
+                    listarDirectorio();
                 }
                 case "cat" -> {
                 }
@@ -114,8 +117,20 @@ public class Hilo extends Thread {
         System.out.println("Conexion cerrada con el cliente " + numeroCliente);
     }
     
+    private void listarDirectorio() {
+        msjSinRetorno("");
+        File directorio = new File(DIRECTORIO);
+        if (directorio.exists()) {
+            for (File elemento : directorio.listFiles()) {
+                msjSinRetorno(elemento.getName());
+            }
+        } else {
+            //LANZAR ERROR
+        }
+    }
+    
     private String mostrarMenu() throws IOException{
-        msjSinRetorno("OPCIONES");
+        msjSinRetornoDobleLinea("OPCIONES");
         msjSinRetorno("ls   - Muestra los archivos del directorio");
         msjSinRetorno("cat  - Muesta el contenido de un archivo");
         msjSinRetorno("get  - Descarga un fichero");
