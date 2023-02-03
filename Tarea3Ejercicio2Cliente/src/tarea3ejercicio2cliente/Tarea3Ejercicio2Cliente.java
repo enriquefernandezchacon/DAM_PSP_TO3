@@ -16,11 +16,13 @@ public class Tarea3Ejercicio2Cliente {
     private static boolean conectado = true;
     private static String respuesta = "";
     private static String envio;
+    private static final String IP = "192.168.1.132";
+    private static final int PUERTO = 5577;
 
 
     public static void main(String[] args) {
         try (
-            Socket socket = new Socket("localhost", 5577);  
+            Socket socket = new Socket(IP, PUERTO);  
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));  
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
                 while (conectado) {
@@ -36,6 +38,8 @@ public class Tarea3Ejercicio2Cliente {
                     } else if (respuesta.endsWith("**+")) {
                         System.out.println("\n" + respuesta.substring(0, respuesta.length() - 3));
                         conectado = false;
+                        out.println("");
+                    } else if (respuesta.endsWith("*-time-*")) {
                         out.println("");
                     } else {
                         System.out.println(respuesta);

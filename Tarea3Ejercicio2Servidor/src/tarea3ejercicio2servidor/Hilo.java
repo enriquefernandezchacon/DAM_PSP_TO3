@@ -102,6 +102,7 @@ public class Hilo extends Thread {
                     Tarea3Ejercicio2Servidor.cerrarServidor(false);
                 }
                 case "time" -> {
+                    calcularTiempoRespuesta();
                 }
                 case "exit" -> {
                     flagApagado = true;
@@ -147,6 +148,21 @@ public class Hilo extends Thread {
         }
     }
     
+    private void calcularTiempoRespuesta() throws IOException {
+        long time_start, time_end;
+        time_start = System.currentTimeMillis();
+        msjCalculoTiempo();// llamamos a la tarea
+        var a = respuesta();
+        time_end = System.currentTimeMillis();
+        
+        if (a != null) {
+            msjSinRetorno("La transmision ha tardado " + (time_end - time_start) + " milisegundos");
+        } else {
+            msjSinRetorno("ERROR: No se ha podido realizar la prueba");
+        }
+        
+    }
+    
     private String mostrarMenu() throws IOException{
         msjSinRetornoDobleLinea("OPCIONES");
         msjSinRetorno("ls   - Muestra los archivos del directorio");
@@ -173,6 +189,10 @@ public class Hilo extends Thread {
 
     private void msjConRetornoSinLinea(String mensaje) {
         out.println(mensaje + "**-");
+    }
+    
+    private void msjCalculoTiempo() {
+        out.println("*-time-*");
     }
 
     private void msjCerrarSocket() {
