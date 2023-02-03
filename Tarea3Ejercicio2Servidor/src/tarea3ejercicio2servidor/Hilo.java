@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -89,6 +90,7 @@ public class Hilo extends Thread {
                     listarDirectorio();
                 }
                 case "cat" -> {
+                    mostrarArchivo();
                 }
                 case "get" -> {
                 }
@@ -125,7 +127,23 @@ public class Hilo extends Thread {
                 msjSinRetorno(elemento.getName());
             }
         } else {
-            //LANZAR ERROR
+            msjSinRetorno("ERROR: El servidor no ha podido encontrar el directorio");
+        }
+    }
+    
+    private void mostrarArchivo() throws IOException {
+        msjSinRetorno("");
+        msjConRetornoSinLinea("Introduzca el normbre del archivo a leer: ");
+        String resp = respuesta();
+        File archivo = new File(DIRECTORIO + resp);
+        if (archivo.exists()) {
+            msjSinRetorno("");
+            Scanner input = new Scanner(archivo);
+            while (input.hasNextLine()) {
+                msjSinRetorno(input.nextLine());
+            }
+        } else {
+            msjSinRetorno("ERROR: El servidor no ha podido encontrar el archivo");
         }
     }
     
