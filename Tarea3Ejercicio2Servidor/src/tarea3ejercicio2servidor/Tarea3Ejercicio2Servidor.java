@@ -1,4 +1,4 @@
-package tarea3ejercicio1servidor;
+package tarea3ejercicio2servidor;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -8,15 +8,15 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author Enrique
+ * @author eofernandez
  */
-public class Tarea3Ejercicio1Servidor {
+public class Tarea3Ejercicio2Servidor {
 
     private static final int PUERTO = 3500;
     private static int contadorClientes = 0;
     public static boolean flagServidorApagado = false;
     private static ServerSocket servidor = null;
-
+    
     public static void main(String[] args) {
         try {
             // Crear un objeto de la clase ServerSocket para escuchar conexiones entrantes
@@ -40,16 +40,16 @@ public class Tarea3Ejercicio1Servidor {
             cerrarServidor();
         }
     }
-
+    
     public static void cerrarServidor() {
         try {
             servidor.close();
         } catch (IOException ex) {
-            Logger.getLogger(Tarea3Ejercicio1Servidor.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Tarea3Ejercicio2Servidor.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println("Servidor apagado desde el cliente");
         // cerrar la conexión de todos los hilos hijo lanzados desde el main()
         System.exit(0);
     }
+    
 }
-

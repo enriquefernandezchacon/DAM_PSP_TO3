@@ -6,6 +6,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -16,7 +18,7 @@ public class Hilo extends Thread {
     private final Socket socket; // Socket del cliente
     private final int numeroSecreto; // Número secreto del servidor
     private static boolean flagApagado = false;
-    private int numero;
+    private final int numero;
 
     public Hilo(Socket socket, int numero) {
         this.socket = socket;
@@ -26,11 +28,13 @@ public class Hilo extends Thread {
 
     @Override
     public void run() {
+        BufferedReader in = null;
+        PrintWriter out = null;
         try {
             // Obtiene los flujos de entrada y salida del socket
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            out = new PrintWriter(socket.getOutputStream(), true);
+            out.println("BIENVENIDO CLIENTE " + numero);
             while (!flagApagado) {
                 System.out.println("A la espera de datos desde el cliente " + numero);
                 // Recibe el número enviado por el cliente
@@ -39,7 +43,7 @@ public class Hilo extends Thread {
                 // Si se ha recibido el código de parada, termina el bucle while
                 if (number == -777) {
                     flagApagado = true;
-                    Tarea3Ejercicio1Servidor.flagApagado = true;
+                    Tarea3Ejercicio1Servidor.flagServidorApagado = true;
                     out.println("SERVERCLOSED");
                     Tarea3Ejercicio1Servidor.cerrarServidor();
                     break;
@@ -55,11 +59,21 @@ public class Hilo extends Thread {
             }
 
             out.println("SOCKETCLOSED");
-            in.close();
-            out.close();
-            socket.close();
-            System.out.println("Conexion cerrada con el cliente " + numero);
+            
         } catch (IOException e) {
+        } finally {
+            try {
+                if (in != null) {
+                    in.close();
+                }
+                if (out != null) {
+                    out.close();
+                }
+                socket.close();
+                System.out.println("Conexion cerrada con el cliente " + numero);
+            } catch (IOException ex) {
+                Logger.getLogger(Hilo.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 }
