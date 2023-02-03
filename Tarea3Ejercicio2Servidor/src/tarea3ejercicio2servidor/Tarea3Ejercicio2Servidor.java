@@ -12,7 +12,7 @@ import java.util.logging.Logger;
  */
 public class Tarea3Ejercicio2Servidor {
 
-    private static final int PUERTO = 3500;
+    private static final int PUERTO = 5577;
     private static int contadorClientes = 0;
     public static boolean flagServidorApagado = false;
     private static ServerSocket servidor = null;
@@ -27,27 +27,32 @@ public class Tarea3Ejercicio2Servidor {
             while (!flagServidorApagado) {
                 // Aceptar una conexión entrante
                 Socket cliente = servidor.accept();
-                System.out.println("Conexion aceptada desde " + cliente.getInetAddress().getHostAddress());
+                contadorClientes++;
+                System.out.println("Cliente " + contadorClientes + " conectado desde " + cliente.getInetAddress().getHostAddress());
 
                 // Crear un objeto de la clase ClientHandler para atender al cliente
-                Hilo clientHandler = new Hilo(cliente, ++contadorClientes);
+                Hilo clientHandler = new Hilo(cliente, contadorClientes);
                 // Iniciar el hilo de ejecución del ClientHandler
                 clientHandler.start();
             }
         } catch (IOException e) {
             System.err.println("Error al aceptar conexion entrante: " + e.getMessage());
         } finally {
-            cerrarServidor();
+            cerrarServidor(true);
         }
     }
     
-    public static void cerrarServidor() {
+    public static void cerrarServidor(Boolean error) {
         try {
             servidor.close();
         } catch (IOException ex) {
             Logger.getLogger(Tarea3Ejercicio2Servidor.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("Servidor apagado desde el cliente");
+        if (error) {
+            System.err.println("Servidor apagado por error interno");
+        } else {
+            System.out.println("Servidor apagado");
+        }
         // cerrar la conexión de todos los hilos hijo lanzados desde el main()
         System.exit(0);
     }

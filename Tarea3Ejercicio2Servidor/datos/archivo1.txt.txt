@@ -1,0 +1,3 @@
+Sencillo. Simplemente elige la cantidad de texto que quieres generar y pulsa sobre el botón «Generar Lorem Ipsum». Puedes elegir tanto el número de caracteres como de palabras o párrafos.
+
+Inmediatamente obtendrás un texto de relleno para tu web o proyecto, que podrás copiar y pegar fácilmente (CRTL + C, o pulsando el botón derecho de tu ratón).
