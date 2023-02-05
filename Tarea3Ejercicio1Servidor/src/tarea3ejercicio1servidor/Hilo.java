@@ -45,6 +45,7 @@ public class Hilo extends Thread {
                     flagApagado = true;
                     Tarea3Ejercicio1Servidor.flagServidorApagado = true;
                     out.println("SERVERCLOSED");
+                    //Se llama al metodo que cierra el servidor
                     Tarea3Ejercicio1Servidor.cerrarServidor();
                     break;
                 // Compara el número recibido con el número secreto y envía la respuesta al cliente
@@ -62,6 +63,7 @@ public class Hilo extends Thread {
             
         } catch (IOException e) {
         } finally {
+            //Tras finalizar el trabajo o uin error, se cierran las conexiones
             try {
                 if (in != null) {
                     in.close();

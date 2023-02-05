@@ -20,22 +20,25 @@ public class Tarea3Ejercicio1Cliente {
      */
     public static void main(String[] args) {
         try (
+            //Se crea el socket y los elementos de entrada y salida
             Socket socket = new Socket("localhost", 3500);  
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));  
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+            //Se lee la línea de bienvenida
             System.out.println(in.readLine());
+                //Se inicia el bucle que controla el procesa con un flag de condicionante
                 while (conectado) {
                     int number;
+                    //Se solicita el numero a ingresar
                     do {
                         System.out.println("\nIngrese un numero entre 1 y 100 (ingrese -777 para detener el servidor): ");
                         number = Entrada.entero();
                     } while (number != -777 && (number < 1 || number > 100));
-
-                    out.println(number); // Envía el número al servidor
-
-                    // Recibe la respuesta del servidor
+                    //Se envía el número al servidor
+                    out.println(number); 
+                    //Se recibe la respuesta del servidor
                     String response = in.readLine();
-
+                    //Se procesa la respuesta
                     switch (response) {
                         case "ACERTADO" -> {
                             System.out.println("Has adivinado el numero secreto!");

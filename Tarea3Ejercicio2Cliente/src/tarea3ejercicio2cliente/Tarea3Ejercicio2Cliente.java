@@ -1,14 +1,12 @@
 package tarea3ejercicio2cliente;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import tarea3ejercicio2cliente.utils.Entrada;
 
 /**
@@ -17,17 +15,28 @@ import tarea3ejercicio2cliente.utils.Entrada;
  */
 public class Tarea3Ejercicio2Cliente {
 
-    private static boolean conectado = true;
-    private static String respuesta = "";
-    private static String envio;
+    private static final String DIRECTORIO_DESCARGAS = "descargas/";
     private static final String IP = "192.168.1.132";
     private static final int PUERTO = 5577;
 
+    private static boolean conectado = true;
+    private static String respuesta = "";
+    private static String envio;
+
+    private static DataInputStream din;
+    private static DataOutputStream dout;
+
     public static void main(String[] args) {
         try (
-                 Socket socket = new Socket(IP, PUERTO);  BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));  PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+                //Se crea un socket con la información de conexión
+                Socket socket = new Socket(IP, PUERTO);) {
+            //Se instancia los objetos para la entrada y salida de datos
+            din = new DataInputStream(socket.getInputStream());
+            dout = new DataOutputStream(socket.getOutputStream());
+            //Se inicia el bucle de escucha con un flag como condicion
             while (conectado) {
-                respuesta = in.readLine();
+                respuesta = din.readUTF();
+                //Los if-else ejecutan las distintas posibilidades
                 if (respuesta.endsWith("***")) {
                     System.out.println("\n" + respuesta.substring(0, respuesta.length() - 3));
                 } else if (respuesta.endsWith("**?")) {
@@ -35,19 +44,19 @@ public class Tarea3Ejercicio2Cliente {
                 } else if (respuesta.endsWith("**-")) {
                     System.out.print(respuesta.substring(0, respuesta.length() - 3));
                     envio = Entrada.cadena();
-                    out.println(envio);
+                    dout.writeUTF(envio);
                 } else if (respuesta.endsWith("**+")) {
                     System.out.println("\n" + respuesta.substring(0, respuesta.length() - 3));
                     conectado = false;
-                    out.println("");
+                    dout.writeUTF("");
                 } else if (respuesta.endsWith("*-time-*")) {
-                    out.println("");
+                    dout.writeUTF("");
                 } else if (respuesta.endsWith("+-+")) {
-                    getArchivo(socket);
+                    getArchivo();
                 } else {
                     System.out.println(respuesta);
                     envio = Entrada.cadena();
-                    out.println(envio);
+                    dout.writeUTF(envio);
                 }
 
             }
@@ -57,30 +66,35 @@ public class Tarea3Ejercicio2Cliente {
         }
     }
 
-    private static void getArchivo(Socket socket) throws IOException {
-        DataInputStream din = new DataInputStream(socket.getInputStream());
-        DataOutputStream dout = new DataOutputStream(socket.getOutputStream());
-        //dout.writeUTF(IP);
-        try (FileOutputStream archivo = new FileOutputStream(din.readUTF())) {
-            byte[] buffer = new byte[1024]; // Recibirá el contenido del archivo en bloques de 4096 bytes.
+    //Este método procesa los datos que llegan para realizar correctamente la descarga del archhivo
+    private static void getArchivo() throws IOException {
+        //Se crea la ruta donde se guardara el archivo
+        String archivoACrear = DIRECTORIO_DESCARGAS + din.readUTF();
+        //Si el archivo ya existe, se borrara para sobreescribirlo
+        if (Files.deleteIfExists(Paths.get(archivoACrear))) {
+            System.out.println("Se ha encontrado un archivo con el mismo nombre");
+            System.out.println("Procediendo a sobreescribirlo");
+        }
+        //Se inicia el proceso
+        try ( FileOutputStream fOutStream = new FileOutputStream(archivoACrear)) {
+            //Se designa el tamaño del buffer
+            byte[] buffer = new byte[1024];
             int leidos;
-
-            // recibimos el tamaño del archivo en bytes.
+            //Se recibie el tamaño del archivo en bytes.
             long tamano = din.readLong();
-
-            // Recibimos el contenido del archivo en bloques de 4096 bytes y lo guardamos en el archivo creado.
+            //Se recibe el archivo por bloques.
             while ((leidos = din.read(buffer)) <= tamano) {
+                fOutStream.write(buffer, 0, leidos);
 
-                archivo.write(buffer, 0, leidos);
-
-                if (din.readUTF().equals("FIN")) {
+                String resp = din.readUTF();
+                //Esta condicion es necesaria para sanber cuando debe acabar el bucle
+                if (resp.equals("FIN")) {
                     System.out.println("Archivo recibido");
                     break;
-                } else if (din.readUTF().equals("ERROR")) {
+                } else if (resp.equals("ERROR")) {
                     System.out.println("Error en la descarga del archivo");
                     break;
                 }
-
             }
         } catch (IOException e) {
             System.err.println("Error: " + e.getMessage());

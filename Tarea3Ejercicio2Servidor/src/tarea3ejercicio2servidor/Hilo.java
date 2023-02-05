@@ -87,6 +87,7 @@ public class Hilo extends Thread {
             respuesta = mostrarMenu();
             switch (respuesta) {
                 case "ls" -> {
+                    log("El cliente " + numeroCliente + "ha solicitado listar el directorio");
                     listarDirectorio();
                 }
                 case "cat" -> {
@@ -103,6 +104,7 @@ public class Hilo extends Thread {
                     Tarea3Ejercicio2Servidor.cerrarServidor(false);
                 }
                 case "time" -> {
+                    log("El cliente " + numeroCliente + "ha solicitado calcular el tiempo de transmision");
                     calcularTiempoRespuesta();
                 }
                 case "exit" -> {
@@ -136,6 +138,7 @@ public class Hilo extends Thread {
         msjSinRetorno("");
         msjConRetornoSinLinea("Introduzca el normbre del archivo a leer: ");
         String resp = respuesta();
+        log("El cliente " + numeroCliente + "ha solicitado mostrar el archivo " + resp);
         File archivo = new File(DIRECTORIO + resp);
         if (archivo.exists()) {
             msjSinRetorno("");
@@ -152,6 +155,7 @@ public class Hilo extends Thread {
         msjSinRetorno("");
         msjConRetornoSinLinea("¿Que archivo desea descargar?: ");
         String resp = respuesta();
+        log("El cliente " + numeroCliente + "ha solicitado descargar el archivo " + resp);
         File archivo = new File(DIRECTORIO + resp);
         if (archivo.exists()) {
             msjEnvioArhivo();
