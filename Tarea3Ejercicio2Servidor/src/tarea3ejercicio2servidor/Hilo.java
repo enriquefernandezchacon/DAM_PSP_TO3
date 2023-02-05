@@ -1,8 +1,12 @@
 package tarea3ejercicio2servidor;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -27,6 +31,8 @@ public class Hilo extends Thread {
     private String respuesta;
     private BufferedReader in = null;
     private PrintWriter out = null;
+    private DataInputStream din = null;
+    private DataOutputStream dout = null;
 
     public Hilo(Socket socket, int numeroCliente) {
         this.socket = socket;
@@ -41,6 +47,8 @@ public class Hilo extends Thread {
     private void asignarRecursos() throws IOException {
         in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         out = new PrintWriter(socket.getOutputStream(), true);
+        din = new DataInputStream(socket.getInputStream());
+        dout = new DataOutputStream(socket.getOutputStream());
         msjSinRetorno("BIENVENIDO CLIENTE " + numeroCliente);
         log("Socket para el cliente " + numeroCliente + " creado");
     }
@@ -93,6 +101,7 @@ public class Hilo extends Thread {
                     mostrarArchivo();
                 }
                 case "get" -> {
+                    enviarArchivo();
                 }
                 case "stop" -> {
                     flagApagado = true;
@@ -119,7 +128,7 @@ public class Hilo extends Thread {
         socket.close();
         System.out.println("Conexion cerrada con el cliente " + numeroCliente);
     }
-    
+
     private void listarDirectorio() {
         msjSinRetorno("");
         File directorio = new File(DIRECTORIO);
@@ -131,7 +140,7 @@ public class Hilo extends Thread {
             msjSinRetorno("ERROR: El servidor no ha podido encontrar el directorio");
         }
     }
-    
+
     private void mostrarArchivo() throws IOException {
         msjSinRetorno("");
         msjConRetornoSinLinea("Introduzca el normbre del archivo a leer: ");
@@ -147,23 +156,55 @@ public class Hilo extends Thread {
             msjSinRetorno("ERROR: El servidor no ha podido encontrar el archivo");
         }
     }
-    
+
+    private void enviarArchivo() throws IOException {
+        //msjSinRetorno("");
+        //msjConRetornoSinLinea("Introduzca el normbre del archivo a descargar: ");
+        msjEnvioArhivo();
+        dout.writeUTF("1");
+        dout.writeUTF("Respuesta: ");
+        respuesta = din.readUTF();
+        dout.writeUTF(respuesta);
+        File archivo = new File(DIRECTORIO + respuesta);
+        if (archivo.exists()) {
+            msjEnvioArhivo();
+            try (FileInputStream fis = new FileInputStream(archivo)) {
+                byte[] receivedData = new byte[1024];
+                int i;
+                
+                dout.writeLong(fis.getChannel().size());
+                
+                while((i = fis.read(receivedData)) != -1) {
+                    dout.write(receivedData, 0, i);
+                }
+                
+                dout.flush();
+                dout.writeUTF("FIN");
+                
+            } catch (IOException e) {
+                dout.writeUTF("ERROR");
+            }
+        } else {
+            msjSinRetorno("ERROR: El servidor no ha podido encontrar el archivo");
+        }
+    }
+
     private void calcularTiempoRespuesta() throws IOException {
         long time_start, time_end;
         time_start = System.currentTimeMillis();
         msjCalculoTiempo();// llamamos a la tarea
         var a = respuesta();
         time_end = System.currentTimeMillis();
-        
+
         if (a != null) {
             msjSinRetorno("La transmision ha tardado " + (time_end - time_start) + " milisegundos");
         } else {
             msjSinRetorno("ERROR: No se ha podido realizar la prueba");
         }
-        
+
     }
-    
-    private String mostrarMenu() throws IOException{
+
+    private String mostrarMenu() throws IOException {
         msjSinRetornoDobleLinea("OPCIONES");
         msjSinRetorno("ls   - Muestra los archivos del directorio");
         msjSinRetorno("cat  - Muesta el contenido de un archivo");
@@ -182,7 +223,7 @@ public class Hilo extends Thread {
     private void msjSinRetorno(String mensaje) {
         out.println(mensaje + "**?");
     }
-    
+
     private void msjSinRetornoDobleLinea(String mensaje) {
         out.println(mensaje + "***");
     }
@@ -190,19 +231,23 @@ public class Hilo extends Thread {
     private void msjConRetornoSinLinea(String mensaje) {
         out.println(mensaje + "**-");
     }
-    
+
     private void msjCalculoTiempo() {
         out.println("*-time-*");
+    }
+
+    private void msjEnvioArhivo() {
+        out.println("+-+");
     }
 
     private void msjCerrarSocket() {
         out.println("Cerrando conexion con el servidor**+");
     }
-    
+
     private void msjApagarServidor() {
         out.println("Apagando el servidor**+");
     }
-    
+
     private String respuesta() throws IOException {
         return in.readLine();
     }
