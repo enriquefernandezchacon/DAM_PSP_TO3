@@ -20,7 +20,7 @@ public class Tarea3Ejercicio2Cliente {
     private static boolean conectado = true;
     private static String respuesta = "";
     private static String envio;
-    private static final String IP = "localhost";
+    private static final String IP = "192.168.1.132";
     private static final int PUERTO = 5577;
 
     public static void main(String[] args) {
@@ -60,9 +60,7 @@ public class Tarea3Ejercicio2Cliente {
     private static void getArchivo(Socket socket) throws IOException {
         DataInputStream din = new DataInputStream(socket.getInputStream());
         DataOutputStream dout = new DataOutputStream(socket.getOutputStream());
-        System.out.println(din.readUTF());
-        System.out.println(din.readUTF());
-        dout.writeUTF(Entrada.cadena());
+        //dout.writeUTF(IP);
         try (FileOutputStream archivo = new FileOutputStream(din.readUTF())) {
             byte[] buffer = new byte[1024]; // Recibirá el contenido del archivo en bloques de 4096 bytes.
             int leidos;
