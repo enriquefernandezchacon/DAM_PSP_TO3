@@ -1,14 +1,10 @@
 package tarea3ejercicio2servidor;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -29,8 +25,6 @@ public class Hilo extends Thread {
     private static final String DIRECTORIO = "datos/";
     private int intentos = 0;
     private String respuesta;
-    private BufferedReader in = null;
-    private PrintWriter out = null;
     private DataInputStream din = null;
     private DataOutputStream dout = null;
 
@@ -45,8 +39,6 @@ public class Hilo extends Thread {
     }
 
     private void asignarRecursos() throws IOException {
-        in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        out = new PrintWriter(socket.getOutputStream(), true);
         din = new DataInputStream(socket.getInputStream());
         dout = new DataOutputStream(socket.getOutputStream());
         msjSinRetorno("BIENVENIDO CLIENTE " + numeroCliente);
@@ -122,14 +114,13 @@ public class Hilo extends Thread {
                     msjSinRetornoDobleLinea("Comando desconocido, vuelva a intentarlo");
             }
         }
-
-        in.close();
-        out.close();
+        din.close();
+        dout.close();
         socket.close();
         System.out.println("Conexion cerrada con el cliente " + numeroCliente);
     }
 
-    private void listarDirectorio() {
+    private void listarDirectorio() throws IOException {
         msjSinRetorno("");
         File directorio = new File(DIRECTORIO);
         if (directorio.exists()) {
@@ -157,17 +148,14 @@ public class Hilo extends Thread {
         }
     }
 
-    private void enviarArchivo() throws IOException {
-        //msjSinRetorno("");
-        //msjConRetornoSinLinea("Introduzca el normbre del archivo a descargar: ");
-        msjEnvioArhivo();
-        dout.writeUTF("1");
-        dout.writeUTF("Respuesta: ");
-        respuesta = din.readUTF();
-        dout.writeUTF(respuesta);
-        File archivo = new File(DIRECTORIO + respuesta);
+    private void enviarArchivo() throws IOException, InterruptedException {
+        msjSinRetorno("");
+        msjConRetornoSinLinea("¿Que archivo desea descargar?: ");
+        String resp = respuesta();
+        File archivo = new File(DIRECTORIO + resp);
         if (archivo.exists()) {
             msjEnvioArhivo();
+            dout.writeUTF(resp);
             try (FileInputStream fis = new FileInputStream(archivo)) {
                 byte[] receivedData = new byte[1024];
                 int i;
@@ -179,8 +167,8 @@ public class Hilo extends Thread {
                 }
                 
                 dout.flush();
-                dout.writeUTF("FIN");
-                
+                Thread.sleep(500);
+                dout.writeUTF("FIN");  
             } catch (IOException e) {
                 dout.writeUTF("ERROR");
             }
@@ -201,7 +189,6 @@ public class Hilo extends Thread {
         } else {
             msjSinRetorno("ERROR: No se ha podido realizar la prueba");
         }
-
     }
 
     private String mostrarMenu() throws IOException {
@@ -216,40 +203,36 @@ public class Hilo extends Thread {
         return respuesta();
     }
 
-    private void msjConRetorno(String mensaje) {
-        out.println(mensaje);
+    private void msjSinRetorno(String mensaje) throws IOException {
+        dout.writeUTF(mensaje + "**?");
     }
 
-    private void msjSinRetorno(String mensaje) {
-        out.println(mensaje + "**?");
+    private void msjSinRetornoDobleLinea(String mensaje) throws IOException {
+        dout.writeUTF(mensaje + "***");
     }
 
-    private void msjSinRetornoDobleLinea(String mensaje) {
-        out.println(mensaje + "***");
+    private void msjConRetornoSinLinea(String mensaje) throws IOException {
+        dout.writeUTF(mensaje + "**-");
     }
 
-    private void msjConRetornoSinLinea(String mensaje) {
-        out.println(mensaje + "**-");
+    private void msjCalculoTiempo() throws IOException {
+        dout.writeUTF("*-time-*");
     }
 
-    private void msjCalculoTiempo() {
-        out.println("*-time-*");
+    private void msjEnvioArhivo() throws IOException {
+        dout.writeUTF("+-+");
     }
 
-    private void msjEnvioArhivo() {
-        out.println("+-+");
+    private void msjCerrarSocket() throws IOException {
+        dout.writeUTF("Cerrando conexion con el servidor**+");
     }
 
-    private void msjCerrarSocket() {
-        out.println("Cerrando conexion con el servidor**+");
-    }
-
-    private void msjApagarServidor() {
-        out.println("Apagando el servidor**+");
+    private void msjApagarServidor() throws IOException {
+        dout.writeUTF("Apagando el servidor**+");
     }
 
     private String respuesta() throws IOException {
-        return in.readLine();
+        return din.readUTF();
     }
 
     private void log(String mensaje) {
